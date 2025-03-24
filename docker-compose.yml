@@ -32,54 +32,39 @@ services:
       #salopez
       #XUiJguhyomVrWMWm
 
-  # mongodb_container:
-  #   # This image automatically creates a replica set required for transactions
-  #   image: prismagraphql/mongo-single-replica:4.4.3-bionic
-  #   container_name: mongo-replica
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: root
-  #     MONGO_INITDB_ROOT_PASSWORD: prisma
-  #   ports:
-  #     - '37017:27017'
-  #     - '27017:27017'
-  #   volumes:
-  #     - ./.docker/mongodb/initdb.d/:/docker-entrypoint-initdb.d
+  products-ms:
+    build: ./products-ms
+    ports:
+      - 3001:3001
+    volumes:
+      - ./products-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      PORT: 3001
+      NATS_SERVERS: nats://nats-server:4222
+      DATABASE_URL: file:./dev.db
 
-#volumes:
- # mongodb_data_container:
-  # products-ms:
-  #   build: ./products-ms
-  #   ports:
-  #     - 3001:3001
-  #   volumes:
-  #     - ./products-ms/src:/usr/src/app/src
-  #   command: npm run start:dev
-  #   environment:
-  #     PORT: 3001
-  #     NATS_SERVERS: nats://nats-server:4222
-  #     DATABASE_URL: file:./dev.db
+  orders-ms:
+    depends_on:
+      - orders-db
+    build: ./orders-ms
+    ports:
+      - 3002:3002
+    volumes:
+      - ./orders-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      PORT: 3002
+      NATS_SERVERS: nats://nats-server:4222
+      DATABASE_URL: postgresql://postgres:12345678@orders-db:5432/ordersdb?schema=public
 
-  # orders-ms:
-  #   depends_on:
-  #     - orders-db
-  #   build: ./orders-ms
-  #   ports:
-  #     - 3002:3002
-  #   volumes:
-  #     - ./orders-ms/src:/usr/src/app/src
-  #   command: npm run start:dev
-  #   environment:
-  #     PORT: 3002
-  #     NATS_SERVERS: nats://nats-server:4222
-  #     DATABASE_URL: postgresql://postgres:12345678@orders-db:5432/ordersdb?schema=public
-
-  # orders-db:
-  #   image: postgres:latest
-  #   ports:
-  #     - 5432:5432
-  #   environment:
-  #     POSTGRES_DB: ordersdb
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: "12345678"
-  #   volumes:
-  #     - ./orders-ms/postgres:/var/lib/postgresql/data
+  orders-db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: ordersdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "12345678"
+    volumes:
+      - ./orders-ms/postgres:/var/lib/postgresql/data
