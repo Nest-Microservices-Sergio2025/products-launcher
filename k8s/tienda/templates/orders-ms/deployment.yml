@@ -26,9 +26,6 @@ spec:
             - name: NATS_SERVERS
               value: "nats://nats"
             - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: orders-secrets
-                  key: database_url
+              value: "postgresql://neondb_owner:npg_PsclWfCI4LA7@ep-still-salad-a4cprwrd.us-east-1.aws.neon.tech/neondb?sslmode=require?connect_timeout=300"
           resources: {}
 status: {}
